@@ -122,7 +122,7 @@ export async function createRevenue(formData: FormData) {
       dbSession.endSession();
     }
 
-    revalidatePath("/dashboard/revenue");
+    revalidatePath("/revenue");
     return { success: true };
   } catch (error: any) {
     if (error instanceof AuthorizationError) {
@@ -189,7 +189,7 @@ export async function voidRevenue(revenueId: string, reason: string) {
             companyId: session.companyId,
             date: new Date(),
             description: `VOID: Revenue ${revenue.source} - Inv: ${revenue.invoiceNumber} - ${reason}`,
-            source: "REVENUE_VOID",
+            source: "REVENUE",
             lines: journalLines,
             createdBy: session.userId
           }, dbSession);
@@ -217,7 +217,7 @@ export async function voidRevenue(revenueId: string, reason: string) {
       dbSession.endSession();
     }
 
-    revalidatePath("/dashboard/revenue");
+    revalidatePath("/revenue");
     return { success: true };
   } catch (error: any) {
     if (error instanceof AuthorizationError) {

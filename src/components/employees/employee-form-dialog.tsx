@@ -35,7 +35,7 @@ const employeeFormSchema = z.object({
   employmentStatus: z.enum(["PERMANENT", "CONTRACT", "PROBATION"]),
   joinDate: z.string().min(1, "Join date is required"),
   basicSalary: z.string().min(1, "Basic salary is required"),
-  ptkpStatus: z.string().default("TK/0"),
+  ptkpStatus: z.string().min(1, "PTKP status is required"),
 });
 
 type EmployeeFormData = z.infer<typeof employeeFormSchema>;

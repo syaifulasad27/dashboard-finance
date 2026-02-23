@@ -124,10 +124,9 @@ export async function reverseJournal(journalId: string, reversalDate?: string) {
         companyId: session.companyId,
         date: reversalDate ? new Date(reversalDate) : new Date(),
         description: `REVERSAL: ${originalJournal.description} (Original: ${originalJournal.journalNo})`,
-        source: "REVERSAL",
+        source: "MANUAL",
         lines: reversingLines,
         createdBy: session.userId,
-        reversesJournalId: originalJournal._id.toString(),
       }, dbSession);
 
       await logAction({

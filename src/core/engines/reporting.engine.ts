@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { PipelineStage } from "mongoose";
 import { connectToDatabase } from "@/infrastructure/database/mongodb";
 import { JournalEntryModel } from "@/infrastructure/database/models/JournalEntry";
 
@@ -7,7 +7,7 @@ export class ReportingEngine {
     await connectToDatabase();
 
     // Aggregation pipeline to quickly sum debits/credits to find current balances
-    const pipeline = [
+    const pipeline: PipelineStage[] = [
       {
         $match: {
           companyId: new mongoose.Types.ObjectId(companyId),
@@ -106,7 +106,7 @@ export class ReportingEngine {
   static async generateTrialBalance(companyId: string, asOfDate: Date) {
     await connectToDatabase();
 
-    const pipeline = [
+    const pipeline: PipelineStage[] = [
       {
         $match: {
           companyId: new mongoose.Types.ObjectId(companyId),
@@ -202,7 +202,7 @@ export class ReportingEngine {
     // Get cash and bank account codes
     const cashAccounts = ["1100", "1101", "1102"]; // Bank, Petty Cash, etc.
 
-    const pipeline = [
+    const pipeline: PipelineStage[] = [
       {
         $match: {
           companyId: new mongoose.Types.ObjectId(companyId),

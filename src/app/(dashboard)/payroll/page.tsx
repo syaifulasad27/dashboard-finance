@@ -18,11 +18,11 @@ export default async function PayrollDashboard() {
   const currentMonth = new Date().getMonth() + 1;
   const currentYear = new Date().getFullYear();
 
-  // Server action for processing payroll
-  const runPayrollAction = async () => {
+  // Create a form action wrapper that returns void (required by form action type)
+  async function runPayrollAction(): Promise<void> {
     "use server";
     await processPayrollBatch(currentMonth, currentYear);
-  };
+  }
 
   return (
     <div className="p-8 space-y-6">

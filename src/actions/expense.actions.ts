@@ -311,7 +311,7 @@ export async function voidExpense(expenseId: string, reason: string) {
             companyId: session.companyId,
             date: new Date(),
             description: `VOID: Expense ${expense.category} - Vendor: ${expense.vendor} - ${reason}`,
-            source: "EXPENSE_VOID",
+            source: "EXPENSE",
             lines: [
               { accountId: bankAccount._id.toString(), debit: amount + tax, credit: 0 },
               { accountId: expenseAccount._id.toString(), debit: 0, credit: amount + tax },

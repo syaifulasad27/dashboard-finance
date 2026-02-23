@@ -1,6 +1,10 @@
 import { AuditLogModel } from "@/infrastructure/database/models/AuditLog";
 import mongoose, { Document, Model } from "mongoose";
 
+// Type alias for filter query compatible with mongoose 9.x
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type FilterQuery<T> = Record<string, any>;
+
 interface LogActionParams {
   companyId: string;
   userId: string;
@@ -59,7 +63,7 @@ export async function auditChange<T extends Document>(
   const oldDoc = await model.findOne({
     _id: resourceId,
     companyId: new mongoose.Types.ObjectId(companyId),
-  } as mongoose.FilterQuery<T>).lean();
+  } as FilterQuery<T>).lean();
 
   // Perform the update
   const newDoc = await updateFn();
@@ -99,7 +103,7 @@ export async function auditDelete<T extends Document>(
   const oldDoc = await model.findOne({
     _id: resourceId,
     companyId: new mongoose.Types.ObjectId(companyId),
-  } as mongoose.FilterQuery<T>).lean();
+  } as FilterQuery<T>).lean();
 
   // Perform the delete
   const deleted = await deleteFn();

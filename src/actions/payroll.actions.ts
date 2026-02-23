@@ -30,8 +30,8 @@ export async function processPayrollBatch(month: number, year: number) {
       newValue: { month, year }
     });
 
-    revalidatePath("/dashboard/payroll");
-    revalidatePath("/dashboard/journal");
+    revalidatePath("/payroll");
+    revalidatePath("/journal");
 
     return { success: true, batchId: result.batchId?.toString() };
   } catch (error: any) {

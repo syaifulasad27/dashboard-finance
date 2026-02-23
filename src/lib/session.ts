@@ -59,7 +59,7 @@ export async function getSessionContext(): Promise<SessionContext> {
     // Debug: list collection names safely
     try {
       const collections = await conn.connection.db?.listCollections().toArray();
-      console.log("getSessionContext: Collections in DB:", collections?.map(c => c.name).join(", "));
+      console.log("getSessionContext: Collections in DB:", collections?.map((c: { name: string }) => c.name).join(", "));
     } catch (dbErr) {
       console.log("getSessionContext: Failed to list collections:", dbErr);
     }
