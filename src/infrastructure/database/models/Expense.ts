@@ -30,4 +30,10 @@ const ExpenseSchema = new Schema<IExpense>(
   { timestamps: true }
 );
 
+// Compound indexes for common query patterns
+ExpenseSchema.index({ companyId: 1, approvalStatus: 1 });
+ExpenseSchema.index({ companyId: 1, date: -1 });
+ExpenseSchema.index({ companyId: 1, category: 1 });
+ExpenseSchema.index({ companyId: 1, createdBy: 1 });
+
 export const ExpenseModel = mongoose.models.Expense || mongoose.model<IExpense>("Expense", ExpenseSchema);

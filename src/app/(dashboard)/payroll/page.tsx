@@ -1,24 +1,27 @@
 import { connectToDatabase } from "@/infrastructure/database/mongodb";
-import { PayrollModel } from "@/infrastructure/database/models/Payroll";
+import { payrollRepository } from "@/infrastructure/repositories/payroll.repository";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { processPayrollBatch } from "@/actions/payroll.actions";
+import { getPageSession } from "@/lib/page-session";
+import { checkPermission } from "@/lib/permissions";
 
 export default async function PayrollDashboard() {
+  const session = await getPageSession();
   await connectToDatabase();
-  const companyId = "60d5ecb8b392d22b28f745d0"; // Mock session company
 
-  const payrolls = await PayrollModel.find({ companyId }).sort({ periodYear: -1, periodMonth: -1 }).lean();
+  const payrolls = await payrollRepository.getHistory(session.companyId);
+  const canProcessPayroll = checkPermission(session, "PAYROLL", "CREATE");
 
   const currentMonth = new Date().getMonth() + 1;
   const currentYear = new Date().getFullYear();
 
-  // Simple quick action for MVP
+  // Server action for processing payroll
   const runPayrollAction = async () => {
     "use server";
-    await processPayrollBatch(companyId, currentMonth, currentYear);
+    await processPayrollBatch(currentMonth, currentYear);
   };
 
   return (
@@ -28,11 +31,13 @@ export default async function PayrollDashboard() {
           <h1 className="text-3xl font-bold">Payroll Management</h1>
           <p className="text-muted-foreground mt-1">Review payroll history and run monthly salary batches.</p>
         </div>
-        <form action={runPayrollAction}>
-          <Button variant="default" className="bg-indigo-600 hover:bg-indigo-700">
-            Run {currentMonth}/{currentYear} Payroll
-          </Button>
-        </form>
+        {canProcessPayroll && (
+          <form action={runPayrollAction}>
+            <Button variant="default" className="bg-indigo-600 hover:bg-indigo-700">
+              Run {currentMonth}/{currentYear} Payroll
+            </Button>
+          </form>
+        )}
       </div>
 
       <Card>

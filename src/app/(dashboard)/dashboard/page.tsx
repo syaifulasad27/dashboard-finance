@@ -2,12 +2,18 @@ import { connectToDatabase } from "@/infrastructure/database/mongodb";
 import { ReportingEngine } from "@/core/engines/reporting.engine";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FinancialChart } from "@/components/dashboard/financial-chart";
+import { getPageSession } from "@/lib/page-session";
 
 export default async function DashboardPage() {
-  await connectToDatabase();
-  const companyId = "60d5ecb8b392d22b28f745d0"; // Mock session company
+  console.log("DashboardPage: Starting render...");
+  const session = await getPageSession();
+  console.log("DashboardPage: Session obtained for:", session.email);
 
-  const metrics = await ReportingEngine.getDashboardMetrics(companyId);
+  await connectToDatabase();
+  console.log("DashboardPage: Connected to database for metrics");
+
+  const metrics = await ReportingEngine.getDashboardMetrics(session.companyId);
+  console.log("DashboardPage: Metrics loaded");
 
   // Prepare chart data (Current year performance)
   // For MVP, we'll use actual data for current month and mock others for visual aesthetics
@@ -22,7 +28,12 @@ export default async function DashboardPage() {
 
   return (
     <div className="p-8 space-y-6">
-      <h1 className="text-3xl font-bold">Financial Global Dashboard</h1>
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold">Financial Dashboard</h1>
+        <span className="text-sm text-muted-foreground">
+          Logged in as: {session.name} ({session.role})
+        </span>
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Card className="border-l-4 border-l-blue-500">

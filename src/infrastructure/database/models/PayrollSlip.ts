@@ -28,4 +28,8 @@ const PayrollSlipSchema = new Schema<IPayrollSlip>(
   { timestamps: true }
 );
 
+// Compound indexes for common query patterns
+PayrollSlipSchema.index({ payrollId: 1, employeeId: 1 }, { unique: true });
+PayrollSlipSchema.index({ employeeId: 1 });
+
 export const PayrollSlipModel = mongoose.models.PayrollSlip || mongoose.model<IPayrollSlip>("PayrollSlip", PayrollSlipSchema);

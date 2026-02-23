@@ -1,15 +1,21 @@
 import { connectToDatabase } from "@/infrastructure/database/mongodb";
-import { EmployeeModel } from "@/infrastructure/database/models/Employee";
+import { employeeRepository } from "@/infrastructure/repositories/employee.repository";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { format } from "date-fns";
-import { Button } from "@/components/ui/button";
+import { getPageSession } from "@/lib/page-session";
+import { checkPermission } from "@/lib/permissions";
+import { EmployeeFormDialog } from "@/components/employees/employee-form-dialog";
+import { EmployeeActions } from "@/components/employees/employee-actions";
 
 export default async function EmployeePage() {
+  const session = await getPageSession();
   await connectToDatabase();
-  const companyId = "60d5ecb8b392d22b28f745d0"; // Mock session company
 
-  const employees = await EmployeeModel.find({ companyId, isActive: true }).sort({ name: 1 }).lean();
+  const employees = await employeeRepository.findActiveEmployees(session.companyId);
+  const canCreate = checkPermission(session, "EMPLOYEE", "CREATE");
+  const canUpdate = checkPermission(session, "EMPLOYEE", "UPDATE");
+  const canDelete = checkPermission(session, "EMPLOYEE", "DELETE");
 
   return (
     <div className="p-8 space-y-6">
@@ -18,7 +24,9 @@ export default async function EmployeePage() {
           <h1 className="text-3xl font-bold">Employee Directory</h1>
           <p className="text-muted-foreground mt-1">Manage your workforce and salary configurations here.</p>
         </div>
-        <Button>+ Add Employee</Button>
+        {canCreate && (
+          <EmployeeFormDialog mode="create" />
+        )}
       </div>
 
       <Card>
@@ -36,6 +44,7 @@ export default async function EmployeePage() {
                 <TableHead>Status</TableHead>
                 <TableHead>Join Date</TableHead>
                 <TableHead className="text-right">Basic Salary</TableHead>
+                {(canUpdate || canDelete) && <TableHead className="w-[80px]">Actions</TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -53,11 +62,33 @@ export default async function EmployeePage() {
                   <TableCell className="text-right">
                     Rp {parseFloat(emp.salaryConfig?.basicSalary?.toString() || "0").toLocaleString("id-ID")}
                   </TableCell>
+                  {(canUpdate || canDelete) && (
+                    <TableCell>
+                      <EmployeeActions
+                        employee={{
+                          _id: emp._id.toString(),
+                          nik: emp.nik,
+                          name: emp.name,
+                          email: emp.email,
+                          npwp: emp.npwp,
+                          bpjsNumber: emp.bpjsNumber,
+                          employmentStatus: emp.employmentStatus,
+                          joinDate: emp.joinDate,
+                          salaryConfig: {
+                            basicSalary: emp.salaryConfig?.basicSalary?.toString() || "0",
+                            ptkpStatus: emp.salaryConfig?.ptkpStatus || "TK/0",
+                          },
+                        }}
+                        canUpdate={canUpdate}
+                        canDelete={canDelete}
+                      />
+                    </TableCell>
+                  )}
                 </TableRow>
               ))}
               {employees.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={canUpdate || canDelete ? 7 : 6} className="text-center py-8 text-muted-foreground">
                     No active employees found.
                   </TableCell>
                 </TableRow>

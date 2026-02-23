@@ -24,7 +24,13 @@ const UserSchema = new Schema<IUser>(
       default: "VIEWER"
     },
   },
-  { timestamps: true }
+  { timestamps: true, collection: "user" }
 );
 
-export const UserModel = mongoose.models.User || mongoose.model<IUser>("User", UserSchema);
+// If model already exists, we might need to recreate it if it doesn't have the correct collection name
+// but in Next.js development, models can be cached. This ensures we use the one with explicit collection.
+if (mongoose.models.User) {
+  delete mongoose.models.User;
+}
+
+export const UserModel = mongoose.model<IUser>("User", UserSchema);

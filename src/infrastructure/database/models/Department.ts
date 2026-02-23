@@ -21,4 +21,8 @@ const DepartmentSchema = new Schema<IDepartment>(
   { timestamps: true }
 );
 
+// Compound indexes for common query patterns
+DepartmentSchema.index({ companyId: 1, name: 1 }, { unique: true });
+DepartmentSchema.index({ companyId: 1, isActive: 1 });
+
 export const DepartmentModel = mongoose.models.Department || mongoose.model<IDepartment>("Department", DepartmentSchema);

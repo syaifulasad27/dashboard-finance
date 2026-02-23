@@ -28,6 +28,9 @@ export interface IEmployee extends Document {
   joinDate: Date;
   salaryConfig: ISalaryConfig;
   isActive: boolean;
+  // Soft delete fields
+  deletedAt?: Date | null;
+  deletedBy?: mongoose.Types.ObjectId | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -63,8 +66,19 @@ const EmployeeSchema = new Schema<IEmployee>(
       ptkpStatus: { type: String, default: "TK/0" },
     },
     isActive: { type: Boolean, default: true },
+    // Soft delete fields
+    deletedAt: { type: Date, default: null, index: true },
+    deletedBy: { type: Schema.Types.ObjectId, ref: "User", default: null },
   },
   { timestamps: true }
 );
+
+// Compound indexes for common query patterns
+EmployeeSchema.index({ companyId: 1, nik: 1 }, { unique: true });
+EmployeeSchema.index({ companyId: 1, email: 1 }, { unique: true });
+EmployeeSchema.index({ companyId: 1, isActive: 1 });
+EmployeeSchema.index({ companyId: 1, departmentId: 1 });
+EmployeeSchema.index({ companyId: 1, costCenterId: 1 });
+EmployeeSchema.index({ companyId: 1, employmentStatus: 1 });
 
 export const EmployeeModel = mongoose.models.Employee || mongoose.model<IEmployee>("Employee", EmployeeSchema);

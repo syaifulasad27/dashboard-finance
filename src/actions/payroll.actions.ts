@@ -3,15 +3,27 @@
 import { revalidatePath } from "next/cache";
 import { PayrollEngine } from "@/core/engines/payroll.engine";
 import { logAction } from "@/lib/logger";
+import { requireAuth, AuthorizationError, ForbiddenError } from "@/lib/session";
+import { requirePermission } from "@/lib/permissions";
 
-export async function processPayrollBatch(companyId: string, month: number, year: number) {
+export async function processPayrollBatch(month: number, year: number) {
   try {
-    const adminId = "60d5ecb8b392d22b28f745d1"; // Mocked admin ID
-    const result = await PayrollEngine.processMonthlyPayroll(companyId, month, year, adminId);
+    // 1. Authenticate and get session context
+    const session = await requireAuth();
+    
+    // 2. Check permission - HR_ADMIN or SUPER_ADMIN can process payroll
+    requirePermission(session, "PAYROLL", "CREATE");
+
+    const result = await PayrollEngine.processMonthlyPayroll(
+      session.companyId,
+      month,
+      year,
+      session.userId
+    );
 
     await logAction({
-      companyId,
-      userId: adminId,
+      companyId: session.companyId,
+      userId: session.userId,
       action: "PROCESS",
       module: "PAYROLL",
       resourceId: result.batchId?.toString(),
@@ -23,6 +35,12 @@ export async function processPayrollBatch(companyId: string, month: number, year
 
     return { success: true, batchId: result.batchId?.toString() };
   } catch (error: any) {
+    if (error instanceof AuthorizationError) {
+      return { success: false, error: "Please log in to continue" };
+    }
+    if (error instanceof ForbiddenError) {
+      return { success: false, error: error.message };
+    }
     return { success: false, error: error.message };
   }
 }

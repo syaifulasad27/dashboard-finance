@@ -32,4 +32,10 @@ const RevenueSchema = new Schema<IRevenue>(
   { timestamps: true }
 );
 
+// Compound indexes for common query patterns
+RevenueSchema.index({ companyId: 1, invoiceNumber: 1 }, { unique: true });
+RevenueSchema.index({ companyId: 1, status: 1 });
+RevenueSchema.index({ companyId: 1, date: -1 });
+RevenueSchema.index({ companyId: 1, customer: 1 });
+
 export const RevenueModel = mongoose.models.Revenue || mongoose.model<IRevenue>("Revenue", RevenueSchema);
